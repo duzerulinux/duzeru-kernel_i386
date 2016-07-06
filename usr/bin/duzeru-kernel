@@ -100,6 +100,11 @@ class DuzeruAppView(WebKit.WebView):
         self.execute_script("$('#{}').hide()".format(
             'password' if not self._config._live else '#'))
         """
+
+    def _lang_config(self, lang):
+        self.execute_script("var lang = '{}'".format(lang))
+
+
     def _load_finished_cb(self, view, frame):
         self._push_config()
 
@@ -224,6 +229,8 @@ class KernelApp(object):
         self._location = os.path.dirname(os.path.abspath(inspect.getfile(
             inspect.currentframe())))
 
+        self.lang = 'pt' if 'pt_BR' in os.getenv('LANG') else 'en'        
+
         # check for relative path
         if os.path.exists(os.path.join(self._location, 'data/')):
             print('Using relative path for data source. Non-production testing.')
@@ -241,13 +248,21 @@ class KernelApp(object):
         # build window
         w = Gtk.Window()
         w.set_position(Gtk.WindowPosition.CENTER)
-        w.set_wmclass('Kernel to Linux Duzeru', 'Kernel to Linux Duuzeru')
-        w.set_title('Kernel to Linux Duzeru')
+
+        if self.lang == "pt":
+            w.set_wmclass('Kernel para o Linux Duzeru', 'Kernel para o Linux Duzeru')
+            w.set_title('Kernel para o Linux Duzeru')
+        else:
+            w.set_wmclass('Kernel to Linux Duzeru', 'Kernel to Linux Duzeru')
+            w.set_title('Kernel to Linux Duzeru')
+
         w.set_size_request(768, 496)
         w.set_icon_from_file(os.path.join(self._data_path, "/usr/share/icons/hicolor/24x24/apps/duzeru-kernel.png"))
 
         # build webkit container
         mv = DuzeruAppView()
+
+        mv._lang_config(self.lang) 
 
         # load our index file
         file_out = os.path.abspath(os.path.join(self._data_path, 'index.html'))
